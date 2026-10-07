@@ -93,15 +93,27 @@ jobs:
           git clone --depth 1 --recursive -b "$SD_TAG" https://github.com/leejet/stable-diffusion.cpp sdsrc
           cmake -S sdsrc -B sdsrc/build -DCMAKE_BUILD_TYPE=Release -DSD_METAL=OFF && cmake --build sdsrc/build -j 3
           mkdir -p sd && cp sdsrc/build/bin/sd-cli sd/ 2>/dev/null || cp sdsrc/build/bin/sd sd/sd-cli
+      - name: Cache models
+        uses: actions/cache@v4
+        with:
+          path: models
+          # Keyed on the exact model files, so swapping a model misses the cache
+          # rather than restoring the wrong weights.
+          key: ${{ runner.os }}-${{ env.DIFFUSION }}-${{ env.T5XXL }}-${{ env.CLIP_L }}-${{ env.VAE }}
       - name: Models
         run: |
           mkdir -p models && cd models
-          get(){ curl -fL --retry 5 --retry-delay 10 -o "$1" "$HF/$2"; }
+          get(){ if [ -s "$1" ]; then echo "cached $1"; else curl -fL --retry 5 --retry-delay 10 -o "$1" "$HF/$2"; fi; }
           get "$DIFFUSION" city96/FLUX.1-schnell-gguf/resolve/main/flux1-schnell-Q4_K_S.gguf &
           get "$T5XXL"     city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_M.gguf &
           get "$CLIP_L"    comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors &
           get "$VAE"       Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors &
-          wait; ls -la
+          wait
+          # A missing or truncated model would otherwise surface 45 minutes into a render.
+          for f in "$DIFFUSION" "$T5XXL" "$CLIP_L" "$VAE"; do
+            [ -s "$f" ] || { echo "::error::model $f is missing or empty"; ls -la; exit 1; }
+          done
+          ls -la
       - name: Render
         env:
           JOBS: ${{ matrix.jobs }}

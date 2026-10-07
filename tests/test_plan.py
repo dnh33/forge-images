@@ -177,6 +177,67 @@ def test_malformed_adhoc_fails(tmp_path):
 
 # ----------------------------------------------------------------- workflow contract
 
+# ----------------------------------------------------------------- guards
+
+def bulk_adhoc(n=12):
+    """An ad-hoc set with enough items to trip the per-shard cap."""
+    items = {f"k{i}": {"seed": 100 + i, "line": f"a study number {i}"} for i in range(n)}
+    payload = {"name": "bulk", "size": [512, 512], "style": "", "items": items}
+    return base64.b64encode(json.dumps(payload).encode()).decode()
+
+
+def test_a_runaway_step_count_is_refused(tmp_path):
+    """A typo in STEPS would otherwise burn hours of runner time."""
+    p, matrix, _ = run_plan(tmp_path, SET="all", STEPS="400")
+    assert p.returncode != 0
+    assert "MAX_STEPS" in (p.stderr + p.stdout)
+
+
+def test_a_non_numeric_step_count_is_refused(tmp_path):
+    p, matrix, _ = run_plan(tmp_path, SET="all", STEPS="four")
+    assert p.returncode != 0
+    assert "whole number" in (p.stderr + p.stdout)
+
+
+def test_a_sane_step_count_is_accepted(tmp_path):
+    p, matrix, _ = run_plan(tmp_path, SET="portraits", ONLY="marshal", STEPS="8", VARIANTS=1)
+    assert p.returncode == 0, p.stderr
+    assert jobs_of(matrix)[0]["steps"] == "8"
+
+
+def test_shards_are_raised_so_no_shard_can_outlive_the_runner(tmp_path):
+    """Twelve items at one shard is one shard of twelve: six hours of rendering."""
+    p, matrix, _ = run_plan(
+        tmp_path, SET="all", ADHOC=bulk_adhoc(12), SHARDS="1",
+        VARIANTS="1", MAX_PER_SHARD="6",
+    )
+    assert p.returncode == 0, p.stderr
+    groups = shards_of(matrix)
+    assert len(groups) == 2, "twelve jobs at six per shard needs two shards"
+    assert all(len(g) <= 6 for g in groups), [len(g) for g in groups]
+    assert "raised shards" in p.stderr, "the escalation must be visible in the log"
+
+
+def test_the_cap_is_configurable(tmp_path):
+    p, matrix, _ = run_plan(
+        tmp_path, SET="all", ADHOC=bulk_adhoc(12), SHARDS="1",
+        VARIANTS="1", MAX_PER_SHARD="12",
+    )
+    assert p.returncode == 0, p.stderr
+    assert len(shards_of(matrix)) == 1, "a cap of twelve fits in one shard"
+
+
+def test_the_cap_never_creates_empty_shards(tmp_path):
+    p, matrix, _ = run_plan(
+        tmp_path, SET="all", ADHOC=bulk_adhoc(3), SHARDS="9",
+        VARIANTS="1", MAX_PER_SHARD="1",
+    )
+    assert p.returncode == 0, p.stderr
+    groups = shards_of(matrix)
+    assert len(groups) == 3, "three jobs cannot make more than three shards"
+    assert all(g for g in groups), "no empty shard should be dispatched"
+
+
 def test_github_output_has_matrix_and_count(tmp_path):
     p, matrix, gh_out = run_plan(tmp_path, SET="all", VARIANTS=1)
     assert p.returncode == 0, p.stderr

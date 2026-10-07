@@ -21,9 +21,15 @@ ONLY = {s.strip() for s in os.environ.get("ONLY", "").split(",") if s.strip()}
 SHARDS = max(1, int(os.environ.get("SHARDS", "8") or 8))
 VARIANTS = max(1, int(os.environ.get("VARIANTS", "2") or 2))
 STEPS = str(os.environ.get("STEPS", "4") or 4)
+MAX_STEPS = max(1, int(os.environ.get("MAX_STEPS", "50") or 50))
 PAGE = 100
 # Explicit page marker keeps each item's prompt from being re-derived anywhere else.
 MARK = "\x00"
+
+if not STEPS.isdigit():
+    sys.exit(f"STEPS must be a whole number, got {STEPS!r}")
+if int(STEPS) > MAX_STEPS:
+    sys.exit(f"STEPS={STEPS} exceeds MAX_STEPS={MAX_STEPS}; a typo here burns hours of runner time")
 
 sets = []
 for path in sorted(glob.glob("prompts/*.json")):
@@ -67,7 +73,17 @@ for name, d, filter_by_only in sets:
 if not jobs:
     sys.exit(f"No items match ONLY={sorted(ONLY)}")
 
-shards = min(SHARDS, len(jobs))
+# A shard renders its items one after another, so an unbounded shard can outlive
+# the runner's time limit. Raise the shard count until every shard fits the cap.
+MAX_PER_SHARD = max(1, int(os.environ.get("MAX_PER_SHARD", "6") or 6))
+min_shards = -(-len(jobs) // MAX_PER_SHARD)  # ceiling division
+shards = min(max(SHARDS, min_shards), len(jobs))
+if shards > SHARDS:
+    print(
+        f"plan: raised shards {SHARDS} -> {shards} so every shard holds "
+        f"at most {MAX_PER_SHARD} job(s)",
+        file=sys.stderr,
+    )
 groups = [jobs[i::shards] for i in range(shards)]
 out = json.dumps({"include": [
     {"shard": i, "name": f"shard {i} ({len(g)} job(s))",
