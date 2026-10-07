@@ -43,8 +43,10 @@ One JSON file per set in `prompts/`. The file is self-describing:
 
 ## One-off prompts
 
-An `adhoc` input accepts a base64-encoded set. It is merged into the run and **never committed** — for a quick
-idea that does not deserve a file. The desktop app uses this for interactive work.
+An `adhoc` input accepts a base64-encoded set. It is **never committed** — for a quick idea that does not
+deserve a file. When `set` is left at `all` (the default), an ad-hoc payload renders **only** that payload:
+it is not merged into the committed sets, so a one-off prompt never silently queues the whole library.
+Name a set explicitly if you want that set *and* the ad-hoc items in the same run.
 
 ```bash
 python3 - <<'PY' | base64 -w0

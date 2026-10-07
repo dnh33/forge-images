@@ -39,6 +39,11 @@ adhoc = os.environ.get("ADHOC", "").strip()
 if adhoc:
     d = json.loads(base64.b64decode(adhoc))
     d.setdefault("size", [768, 1024])
+    # An ad-hoc payload is a one-off. On its own it means "render only this",
+    # never "render this AND every set committed to the repository" — a one-off
+    # prompt must not silently queue the whole library.
+    if SET == "all":
+        sets = []
     sets.append((d.get("name", "adhoc"), d))
 
 if not sets:
