@@ -69,6 +69,7 @@ jobs:
 
   render:
     needs: plan
+    name: ${{ matrix.name }}
     runs-on: ${{ inputs.runner }}
     timeout-minutes: 350
     strategy:

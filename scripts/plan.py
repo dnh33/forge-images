@@ -63,7 +63,8 @@ if not jobs:
 shards = min(SHARDS, len(jobs))
 groups = [jobs[i::shards] for i in range(shards)]
 out = json.dumps({"include": [
-    {"shard": i, "jobs": base64.b64encode(json.dumps(g).encode()).decode()}
+    {"shard": i, "name": f"shard {i} ({len(g)} job(s))",
+     "jobs": base64.b64encode(json.dumps(g).encode()).decode()}
     for i, g in enumerate(groups)
 ]})
 print(out)
