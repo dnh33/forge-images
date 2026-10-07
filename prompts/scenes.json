@@ -1,0 +1,15 @@
+{
+ "name": "Scenes",
+ "size": [1344, 576],
+ "style": "Cinematic grimdark gothic sci-fi environment concept art, wide establishing shot, painted with heavy chiaroscuro and volumetric haze. Monumental architecture of blackened iron, worn bronze and soot-stained stone, cathedral-scale forge halls, hanging chains and chains of lamps, stained-glass optics glowing in the dark, rivers of molten metal, drifting incense smoke, deep shadow with a few warm key lights. Sombre, sincere, devotional, epic scale. Original design. No text, no letters, no logos, no birds, no eagles, no wings, no emblem of a skull inside a cog.",
+ "items": {
+  "forge-cathedral": {
+   "seed": 2101,
+   "line": "A vast forge-cathedral interior, tiers of iron galleries rising into darkness, immense hanging braziers, a colossal masked statue presiding over a glowing furnace floor, tiny acolytes for scale."
+  },
+  "kiln-district": {
+   "seed": 2102,
+   "line": "An industrial kiln district at dusk seen from a high walkway, ranks of chimney stacks venting ember-lit smoke, bronze pipes and gantries, a procession of lanterns winding between the furnaces."
+  }
+ }
+}

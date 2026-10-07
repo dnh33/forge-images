@@ -1,0 +1,138 @@
+name: Render
+# Free, public batch image pipeline. FLUX.1-schnell (Apache-2.0, Black Forest Labs)
+# as a Q4 GGUF, rendered on CPU by stable-diffusion.cpp (MIT) on GitHub-hosted runners.
+# GitHub-hosted runners are free for public repositories, so a run costs nothing.
+on:
+  workflow_dispatch:
+    inputs:
+      set:
+        description: "Prompt set in prompts/ (without .json), or 'all'"
+        default: "all"
+        type: string
+      only:
+        description: "Comma-separated item ids. Empty = every item in the set"
+        default: ""
+        type: string
+      variants:
+        description: "Seeds per item"
+        default: "2"
+        type: string
+      steps:
+        description: "Sampling steps (schnell is made for 4)"
+        default: "4"
+        type: string
+      shards:
+        description: "Parallel jobs (each downloads the models once)"
+        default: "8"
+        type: string
+      adhoc:
+        description: "Optional base64 set for one-off prompts. Merged in, never committed"
+        default: ""
+        type: string
+      runner:
+        description: "Runner image"
+        default: "ubuntu-latest"
+        type: choice
+        options: [ubuntu-latest, macos-15, macos-14]
+permissions:
+  contents: write
+concurrency: {group: render, cancel-in-progress: false}
+env:
+  SD_TAG: master-945-a1ded76
+  HF: https://huggingface.co
+  # Model files. Swap these four lines to change the model; nothing else moves.
+  MODELS: models
+  DIFFUSION: flux.gguf
+  VAE: ae.safetensors
+  CLIP_L: clip_l.safetensors
+  T5XXL: t5.gguf
+  CFG: "1.0"
+  SAMPLER: euler
+  MODEL_NAME: FLUX.1-schnell Q4_K_S GGUF (Apache-2.0)
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.p.outputs.matrix }}
+      count: ${{ steps.p.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: p
+        env:
+          SET: ${{ inputs.set }}
+          ONLY: ${{ inputs.only }}
+          SHARDS: ${{ inputs.shards }}
+          VARIANTS: ${{ inputs.variants }}
+          STEPS: ${{ inputs.steps }}
+          ADHOC: ${{ inputs.adhoc }}
+        run: python3 scripts/plan.py
+
+  render:
+    needs: plan
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk (Linux)
+        if: runner.os == 'Linux'
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL; df -h .
+      - name: stable-diffusion.cpp (prebuilt, Linux)
+        if: runner.os == 'Linux'
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          gh release download "$SD_TAG" -R leejet/stable-diffusion.cpp --pattern '*bin-Linux-Ubuntu-24.04-x86_64.zip' -O sd.zip
+          unzip -q sd.zip -d sd && chmod +x sd/sd-cli && echo "LD_LIBRARY_PATH=$PWD/sd" >> "$GITHUB_ENV"
+      - name: stable-diffusion.cpp (build, macOS)
+        if: runner.os == 'macOS'
+        run: |
+          git clone --depth 1 --recursive -b "$SD_TAG" https://github.com/leejet/stable-diffusion.cpp sdsrc
+          cmake -S sdsrc -B sdsrc/build -DCMAKE_BUILD_TYPE=Release -DSD_METAL=OFF && cmake --build sdsrc/build -j 3
+          mkdir -p sd && cp sdsrc/build/bin/sd-cli sd/ 2>/dev/null || cp sdsrc/build/bin/sd sd/sd-cli
+      - name: Models
+        run: |
+          mkdir -p models && cd models
+          get(){ curl -fL --retry 5 --retry-delay 10 -o "$1" "$HF/$2"; }
+          get "$DIFFUSION" city96/FLUX.1-schnell-gguf/resolve/main/flux1-schnell-Q4_K_S.gguf &
+          get "$T5XXL"     city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_M.gguf &
+          get "$CLIP_L"    comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors &
+          get "$VAE"       Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors &
+          wait; ls -la
+      - name: Render
+        env:
+          JOBS: ${{ matrix.jobs }}
+          STEPS: ${{ inputs.steps }}
+          SD_BIN: ./sd/sd-cli
+        run: python3 scripts/render.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: "render-${{ matrix.shard }}", path: out/, if-no-files-found: warn, retention-days: 30}
+
+  publish:
+    needs: render
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/download-artifact@v4
+        with: {pattern: "render-*", path: dl, merge-multiple: true}
+      - name: Commit to the renders branch
+        run: |
+          set -e
+          cp scripts/sheet.py /tmp/sheet.py
+          git config user.name "render-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin renders >/dev/null; then git checkout renders; else git checkout --orphan renders; git rm -rf --quiet . || true; fi
+          mkdir -p renders
+          for f in dl/*; do
+            b=$(basename "$f"); case "$b" in
+              *.png|*.json) grp=$(echo "$b" | cut -d- -f1); mkdir -p "renders/$grp"; cp "$f" "renders/$grp/";;
+            esac
+          done
+          python3 -m pip install --quiet --break-system-packages pillow && python3 /tmp/sheet.py
+          git add renders
+          (git commit -m "Renders from run ${{ github.run_id }}" && git push origin renders) || echo "Nothing new"

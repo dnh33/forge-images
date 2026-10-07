@@ -1,0 +1,73 @@
+"""Resolve a render job matrix from prompt sets and/or an ad-hoc payload.
+
+Every job is fully resolved here (prompt text, size, seed), then carried to the
+render jobs base64-encoded. That is what lets one-off prompts run without ever
+being committed to the repository.
+
+Inputs (env):
+  SET       name of a file in prompts/ (without .json), or "all"   default "all"
+  ONLY      comma-separated item ids to keep                        default: all
+  SHARDS    number of parallel jobs (one model download each)       default 8
+  VARIANTS  seeds per item                                          default 2
+  STEPS     sampling steps                                          default 4
+  ADHOC     base64 JSON of an extra set, merged in:
+            {"name","size":[w,h],"style","items":{id:{seed,line}}}
+Output: matrix JSON to stdout and to $GITHUB_OUTPUT as matrix=<json>.
+"""
+import base64, glob, json, os, sys
+
+SET = os.environ.get("SET", "all").strip() or "all"
+ONLY = {s.strip() for s in os.environ.get("ONLY", "").split(",") if s.strip()}
+SHARDS = max(1, int(os.environ.get("SHARDS", "8") or 8))
+VARIANTS = max(1, int(os.environ.get("VARIANTS", "2") or 2))
+STEPS = str(os.environ.get("STEPS", "4") or 4)
+PAGE = 100
+# Explicit page marker keeps each item's prompt from being re-derived anywhere else.
+MARK = "\x00"
+
+sets = []
+for path in sorted(glob.glob("prompts/*.json")):
+    name = os.path.basename(path)[:-5]
+    if SET != "all" and name != SET:
+        continue
+    with open(path) as f:
+        d = json.load(f)
+    d.setdefault("size", [768, 1024])
+    sets.append((name, d))
+
+adhoc = os.environ.get("ADHOC", "").strip()
+if adhoc:
+    d = json.loads(base64.b64decode(adhoc))
+    d.setdefault("size", [768, 1024])
+    sets.append((d.get("name", "adhoc"), d))
+
+if not sets:
+    sys.exit(f"No prompt sets match SET={SET!r} (have: {[os.path.basename(p)[:-5] for p in glob.glob('prompts/*.json')]})")
+
+jobs = []
+for name, d in sets:
+    w, h = d["size"]
+    style = (d.get("style") or "").strip()
+    for key, e in d["items"].items():
+        if ONLY and key not in ONLY:
+            continue
+        for v in range(VARIANTS):
+            seed = int(e["seed"]) + v * 1000
+            prompt = (e["line"].strip() + " " + style).strip()
+            jobs.append({"id": f"{name}:{key}", "kind": name, "key": key,
+                         "prompt": prompt, "w": w, "h": h, "seed": seed, "steps": STEPS})
+
+if not jobs:
+    sys.exit(f"No items match ONLY={sorted(ONLY)}")
+
+shards = min(SHARDS, len(jobs))
+groups = [jobs[i::shards] for i in range(shards)]
+out = json.dumps({"include": [
+    {"shard": i, "jobs": base64.b64encode(json.dumps(g).encode()).decode()}
+    for i, g in enumerate(groups)
+]})
+print(out)
+print(f"plan: {len(jobs)} job(s) across {shards} shard(s)", file=sys.stderr)
+with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+    f.write(f"matrix={out}\n")
+    f.write(f"count={len(jobs)}\n")
