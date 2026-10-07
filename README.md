@@ -63,9 +63,20 @@ PY
 
 ## Cost and speed
 
-Free. The trade is time: CPU rendering means roughly a minute or two per image on a runner, versus a few seconds
-on a GPU. Sharding is how a batch finishes in reasonable wall-clock time. For interactive work, run the same
-prompts locally on a GPU (ComfyUI); this pipeline is for the batch.
+Free. The trade is time, and the trade is steep — measured, not estimated:
+
+| | |
+|---|---|
+| one 768x1024 image, 4 steps, FLUX.1-schnell Q4_K_S | **2702 s (45 min)** on a free `ubuntu-latest` runner (4 vCPU) |
+| the same render on a mid-range desktop GPU | a few seconds |
+
+That number is recorded in every image's JSON sidecar (`seconds`), so it can be checked rather than
+trusted. Plan for it: a single image is an hour-class job, which is exactly why the pipeline shards a
+batch across parallel jobs — a shard only pays the model download once, and wall-clock falls as you
+add shards. Keep each shard to a small number of images so it stays inside the job timeout.
+
+For interactive work, run the same prompts locally on a GPU (ComfyUI). This pipeline is for the batch
+that can wait.
 
 ## Driving it from the desktop app
 
