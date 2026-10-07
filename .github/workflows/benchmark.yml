@@ -107,6 +107,22 @@ jobs:
           echo "SD_BIN=./sd/sd-cli" >> "$GITHUB_ENV"
           echo "STEPS=$MH_STEPS" >> "$GITHUB_ENV"
           echo "JOBS=$(python3 -c "import base64;print(base64.b64encode(open('job.json','rb').read()).decode())")" >> "$GITHUB_ENV"
+          # $GITHUB_ENV only reaches the NEXT step, so build the same environment
+          # locally with %q quoting (EXTRA holds flags separated by spaces) and
+          # source it for this run.
+          {
+            printf '%s\n' "$MH_ENV"
+            printf 'MODEL_NAME=%q\n' "$MH_MODEL"
+            printf 'CFG=%q\n' "$MH_CFG"
+            printf 'EXTRA=%q\n' "$MH_EXTRA"
+            printf 'SD_BIN=%q\n' "./sd/sd-cli"
+            printf 'STEPS=%q\n' "$MH_STEPS"
+            printf 'JOBS=%q\n' "$(python3 -c "import base64;print(base64.b64encode(open('job.json','rb').read()).decode())")"
+          } > /tmp/modelenv
+          set -a
+          . /tmp/modelenv
+          set +a
+          echo "running with EXTRA=[$EXTRA] STEPS=$STEPS LLM=[$LLM]"
           python3 scripts/render.py
       - name: Report the measurement
         if: always()
