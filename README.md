@@ -1,4 +1,4 @@
-# forge-render
+# forge-images
 
 A free, public batch image pipeline: write prompt sets as JSON, run a workflow, get contact sheets back.
 
