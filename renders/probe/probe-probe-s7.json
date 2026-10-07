@@ -1,0 +1,14 @@
+{
+ "kind": "probe",
+ "id": "probe",
+ "seed": 7,
+ "steps": 4,
+ "size": [
+  512,
+  512
+ ],
+ "seconds": 422,
+ "prompt": "a hooded figure beside a forge oil painting, heavy chiaroscuro, dark background",
+ "model": "FLUX.1-schnell Q4_K_S GGUF (Apache-2.0)",
+ "runner": "Linux/X64"
+}
