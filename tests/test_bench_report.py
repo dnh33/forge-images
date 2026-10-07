@@ -32,7 +32,8 @@ def test_table_lists_every_sidecar(tmp_path):
     assert p.returncode == 0, p.stderr
     assert "Model A (Apache-2.0)" in text and "2702" in text
     assert "Model B (Apache-2.0)" in text and "900" in text
-    assert text.count("| --- |") == 1, "one header, one separator"
+    assert text.count("| model | canvas | steps | seconds |") == 1, "one header row"
+    assert "| --- | --- | --- | --- |" in text
 
 
 def test_no_sidecars_is_not_a_crash(tmp_path):
