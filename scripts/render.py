@@ -11,12 +11,19 @@ M = os.environ.get("MODELS", "models")
 DEFAULT_STEPS = os.environ.get("STEPS", "4")
 
 # Model files, overridable so the pipeline can swap models without touching code.
+# Two families are supported: the CLIP-L + T5 pair that FLUX.1 uses, and the
+# single `--llm` text encoder that FLUX.2 and Z-Image use.
 DIFFUSION = os.environ.get("DIFFUSION", "flux.gguf")
 VAE = os.environ.get("VAE", "ae.safetensors")
 CLIP_L = os.environ.get("CLIP_L", "clip_l.safetensors")
 T5XXL = os.environ.get("T5XXL", "t5.gguf")
+LLM = os.environ.get("LLM", "")
 CFG = os.environ.get("CFG", "1.0")
 SAMPLER = os.environ.get("SAMPLER", "euler")
+THREADS = os.environ.get("THREADS", "")
+# Free-form extra flags, e.g. "--offload-to-cpu --diffusion-fa", which both
+# FLUX.2 and Z-Image want on a memory-tight CPU host.
+EXTRA = os.environ.get("EXTRA", "")
 MODEL_NAME = os.environ.get("MODEL_NAME", "FLUX.1-schnell Q4_K_S GGUF (Apache-2.0)")
 
 os.makedirs("out", exist_ok=True)
@@ -34,11 +41,18 @@ def build_cmd(job):
         cmd += ["--clip_l", os.path.join(M, CLIP_L)]
     if T5XXL:
         cmd += ["--t5xxl", os.path.join(M, T5XXL)]
+    if LLM:
+        # The single text encoder that FLUX.2 and Z-Image take.
+        cmd += ["--llm", os.path.join(M, LLM)]
     if CFG:
         cmd += ["--cfg-scale", CFG]
     if SAMPLER:
         cmd += ["--sampling-method", SAMPLER]
+    if THREADS:
+        cmd += ["-t", THREADS]
     cmd += ["--steps", str(job.get("steps", DEFAULT_STEPS))]
+    if EXTRA:
+        cmd += EXTRA.split()
     return name, cmd
 
 

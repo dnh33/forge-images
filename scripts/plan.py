@@ -33,7 +33,8 @@ for path in sorted(glob.glob("prompts/*.json")):
     with open(path) as f:
         d = json.load(f)
     d.setdefault("size", [768, 1024])
-    sets.append((name, d))
+    # (name, set, subject_to_only_filter)
+    sets.append((name, d, True))
 
 adhoc = os.environ.get("ADHOC", "").strip()
 if adhoc:
@@ -41,20 +42,21 @@ if adhoc:
     d.setdefault("size", [768, 1024])
     # An ad-hoc payload is a one-off. On its own it means "render only this",
     # never "render this AND every set committed to the repository" — a one-off
-    # prompt must not silently queue the whole library.
+    # prompt must not silently queue the whole library. It is also exempt from
+    # ONLY: the caller chose its items outright.
     if SET == "all":
         sets = []
-    sets.append((d.get("name", "adhoc"), d))
+    sets.append((d.get("name", "adhoc"), d, False))
 
 if not sets:
     sys.exit(f"No prompt sets match SET={SET!r} (have: {[os.path.basename(p)[:-5] for p in glob.glob('prompts/*.json')]})")
 
 jobs = []
-for name, d in sets:
+for name, d, filter_by_only in sets:
     w, h = d["size"]
     style = (d.get("style") or "").strip()
     for key, e in d["items"].items():
-        if ONLY and key not in ONLY:
+        if ONLY and filter_by_only and key not in ONLY:
             continue
         for v in range(VARIANTS):
             seed = int(e["seed"]) + v * 1000

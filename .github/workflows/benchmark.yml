@@ -1,0 +1,123 @@
+name: benchmark
+# Compare model profiles on a real runner, one image each, same prompt and canvas.
+# The point is a measured `seconds` in each sidecar, not an opinion. Profiles are
+# defined entirely by env, so adding a model is a few lines here and nothing else.
+on:
+  workflow_dispatch:
+    inputs:
+      item:   {description: "Set:item to render", default: "portraits:marshal", type: string}
+      width:  {description: "Canvas width", default: "768", type: string}
+      height: {description: "Canvas height", default: "1024", type: string}
+permissions:
+  contents: read
+concurrency: {group: benchmark, cancel-in-progress: false}
+env:
+  SD_TAG: master-945-a1ded76
+  HF: https://huggingface.co
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: schnell-q4ks
+            model_name: "FLUX.1-schnell Q4_K_S (Apache-2.0)"
+            steps: "4"
+            cfg: "1.0"
+            extra: ""
+            files: |
+              flux.gguf city96/FLUX.1-schnell-gguf/resolve/main/flux1-schnell-Q4_K_S.gguf
+              t5.gguf city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_M.gguf
+              clip_l.safetensors comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors
+              ae.safetensors Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors
+            envv: |
+              DIFFUSION=flux.gguf
+              T5XXL=t5.gguf
+              CLIP_L=clip_l.safetensors
+              VAE=ae.safetensors
+              LLM=
+          - profile: z-image-turbo-q3k
+            model_name: "Z-Image-Turbo Q3_K (Apache-2.0)"
+            steps: "8"
+            cfg: "1.0"
+            extra: "--offload-to-cpu --diffusion-fa"
+            files: |
+              diff.gguf leejet/Z-Image-Turbo-GGUF/resolve/main/z_image_turbo-Q3_K.gguf
+              llm.gguf unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/main/Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+              ae.safetensors Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors
+            envv: |
+              DIFFUSION=diff.gguf
+              LLM=llm.gguf
+              T5XXL=
+              CLIP_L=
+              VAE=ae.safetensors
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk (Linux)
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/ghc /opt/hostedtoolcache/CodeQL; df -h .
+      - name: stable-diffusion.cpp (prebuilt, Linux)
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          gh release download "$SD_TAG" -R leejet/stable-diffusion.cpp --pattern '*bin-Linux-Ubuntu-24.04-x86_64.zip' -O sd.zip
+          unzip -q sd.zip -d sd && chmod +x sd/sd-cli && echo "LD_LIBRARY_PATH=$PWD/sd" >> "$GITHUB_ENV"
+      - name: Models
+        env:
+          MH_FILES: ${{ matrix.files }}
+        run: |
+          mkdir -p models && cd models
+          printf '%s\n' "$MH_FILES" | while read -r f url; do
+            [ -z "$f" ] && continue
+            curl -fL --retry 5 --retry-delay 10 -o "$f" "$HF/$url" &
+          done
+          wait
+          ls -la
+      - name: Render one image
+        env:
+          MH_ENV: ${{ matrix.envv }}
+          MH_MODEL: ${{ matrix.model_name }}
+          MH_STEPS: ${{ matrix.steps }}
+          MH_CFG: ${{ matrix.cfg }}
+          MH_EXTRA: ${{ matrix.extra }}
+          ITEM: ${{ inputs.item }}
+          BW: ${{ inputs.width }}
+          BH: ${{ inputs.height }}
+        run: |
+          python3 - <<'PY'
+          import base64, json, os
+          kind, key = os.environ["ITEM"].split(":", 1)
+          d = json.load(open(f"prompts/{kind}.json"))
+          line = d["items"][key]["line"].strip()
+          style = (d.get("style") or "").strip()
+          job = {"id": f"{kind}:{key}", "kind": kind, "key": key,
+                 "prompt": (line + " " + style).strip(), "w": int(os.environ["BW"]),
+                 "h": int(os.environ["BH"]), "seed": int(d["items"][key]["seed"]),
+                 "steps": os.environ["MH_STEPS"]}
+          with open("job.json", "w") as fh:
+              json.dump([job], fh)
+          print("job:", job["id"], job["w"], "x", job["h"], "steps", job["steps"])
+          PY
+          while IFS= read -r line; do
+            [ -n "$line" ] && echo "$line" >> "$GITHUB_ENV"
+          done <<< "$MH_ENV"
+          echo "MODEL_NAME=$MH_MODEL" >> "$GITHUB_ENV"
+          echo "CFG=$MH_CFG" >> "$GITHUB_ENV"
+          echo "EXTRA=$MH_EXTRA" >> "$GITHUB_ENV"
+          echo "SD_BIN=./sd/sd-cli" >> "$GITHUB_ENV"
+          echo "STEPS=$MH_STEPS" >> "$GITHUB_ENV"
+          echo "JOBS=$(python3 -c "import base64;print(base64.b64encode(open('job.json','rb').read()).decode())")" >> "$GITHUB_ENV"
+          python3 scripts/render.py
+      - name: Report the measurement
+        if: always()
+        run: |
+          echo "### ${{ matrix.profile }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          python3 scripts/bench_report.py "$GITHUB_STEP_SUMMARY" || echo "(no sidecar produced)" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bench-${{ matrix.profile }}
+          path: out/
+          if-no-files-found: warn
+          retention-days: 30
