@@ -67,11 +67,26 @@ jobs:
           MH_FILES: ${{ matrix.files }}
         run: |
           mkdir -p models && cd models
-          printf '%s\n' "$MH_FILES" | while read -r f url; do
+          # A here-string keeps this loop in the CURRENT shell. `printf ... | while`
+          # would run it in a subshell, and the `wait` below would then wait for
+          # nothing while curl was still writing -- which is how a render starts
+          # against an empty models/ directory.
+          while read -r f url; do
             [ -z "$f" ] && continue
             curl -fL --retry 5 --retry-delay 10 -o "$f" "$HF/$url" &
-          done
+          done <<< "$MH_FILES"
           wait
+          # Fail loudly rather than spend an hour rendering against a bad model.
+          missing=""
+          while read -r f url; do
+            [ -z "$f" ] && continue
+            [ -s "$f" ] || missing="$missing $f"
+          done <<< "$MH_FILES"
+          if [ -n "$missing" ]; then
+            echo "::error::model files missing or empty:$missing"
+            ls -la
+            exit 1
+          fi
           ls -la
       - name: Render one image
         env:
