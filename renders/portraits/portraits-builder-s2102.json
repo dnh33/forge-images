@@ -1,0 +1,15 @@
+{
+ "kind": "portraits",
+ "id": "builder",
+ "seed": 2102,
+ "steps": 4,
+ "size": [
+  768,
+  1024
+ ],
+ "seconds": 1632,
+ "prompt": "The Builder: broad-shouldered, a riveted mason's mask with two green optics, a heavy bronze set-square and a plumb-bob on a chain, stone dust in the folds, one massive mechanical arm ending in a trowel and a hammer. Grimdark gothic sci-fi oil painting, half-length portrait of a hooded machine-acolyte of a fanatical machine priesthood, centred, facing the viewer, from the waist up. Heavy ash-black and oxblood vestments with bone-white trim, frayed hems, layered over blackened iron and worn bronze augmetics. Where the face should be: a shadowed hood holding an iron or brass mask with glowing optic lenses, cables and ribbed tubes jacked into the hood, segmented mechanical tendril-arms rising behind the shoulders, wax seals with long parchment strips pinned to the chest, small bone memento mori skulls and reliquary charms on chains, a candle or censer smoke curling up. Painterly brushwork, heavy chiaroscuro, single warm key light from the upper left, deep smoky background fading to black, incense haze, sombre, sincere, devotional, monumental. Original design. No text, no letters, no logos, no birds, no eagles, no wings, no emblem of a skull inside a cog, no floating skulls, no shoulder pauldrons, no power armour.",
+ "model": "FLUX.1-schnell Q4_K_S GGUF (Apache-2.0)",
+ "preview": false,
+ "runner": "Linux/X64"
+}
