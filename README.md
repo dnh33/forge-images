@@ -14,8 +14,9 @@ repositories, by a small open model.
 | **Compute** | GitHub-hosted `ubuntu-latest` runners — free for public repositories |
 | **Output** | the `renders` branch (PNG + a JSON sidecar per image, contact sheets in `renders/sheets/`) and the run's artifacts |
 
-The model files are four lines of `env:` in the workflow. Swap them and the pipeline renders something else;
-no code moves.
+The model files are a few lines of `env:` in the workflow. Swap them and the pipeline renders something else;
+no code moves. Which variables a given model needs, and how to prove a swap with a measured run, is in
+[docs/MODELS.md](docs/MODELS.md).
 
 ## Run it
 
@@ -58,8 +59,19 @@ PY
 ## How it works
 
 1. **plan** — `scripts/plan.py` resolves every job (prompt text, size, seed, steps) and shards them.
-2. **render** — `scripts/render.py` renders each shard. Shards run in parallel; the model is downloaded once per shard.
+2. **render** — `scripts/render.py` renders each shard. Shards run in parallel; the model is cached between runs.
+   A shard holds at most six images (`MAX_PER_SHARD`), so no shard can outlive the job timeout.
 3. **publish** — artifacts are merged onto the `renders` branch, contact sheets are rebuilt, and the index page is written.
+
+## Tests
+
+```bash
+python3 -m pytest tests -q     # no network, no GPU
+```
+
+The suite runs on every push (`.github/workflows/ci.yml`). It pins the job-matrix contract, the exact argv handed to
+the runtime, the ad-hoc rules, the sharding guards and the sidecar provenance. It finishes in seconds because it
+stubs the runtime instead of rendering: a test that needed a 45-minute render would not be run.
 
 ## Cost and speed
 
