@@ -1,0 +1,15 @@
+{
+ "kind": "test-set",
+ "id": "subject-1",
+ "seed": 2001,
+ "steps": 4,
+ "size": [
+  768,
+  1024
+ ],
+ "seconds": 2456,
+ "prompt": "PC case with plywood frames, and noctura fans, designed around a laptop motherboard but turned into a desktop PC. Realistic design for DIY. PC case with plywood frames, and noctura fans, designed around a laptop motherboard but turned into a desktop PC.",
+ "model": "FLUX.1-schnell Q4_K_S GGUF (Apache-2.0)",
+ "preview": false,
+ "runner": "Linux/X64"
+}

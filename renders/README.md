@@ -6,6 +6,8 @@ Batch images produced by the `render` workflow (see the main branch).
 
 ![probe](sheets/probe.jpg)
 
+![test](sheets/test.jpg)
+
 | set | id | seed | time | size | image |
 |---|---|---|---|---|---|
 | portraits | builder | 1102 | 2863s | [768, 1024] | ![](portraits/portraits-builder-s1102.png) |
@@ -15,3 +17,5 @@ Batch images produced by the `render` workflow (see the main branch).
 | portraits | marshal | 1101 | 2700s | [768, 1024] | ![](portraits/portraits-marshal-s1101.png) |
 | portraits | marshal | 2101 | 1605s | [768, 1024] | ![](portraits/portraits-marshal-s2101.png) |
 | probe | probe | 7 | 422s | [512, 512] | ![](probe/probe-probe-s7.png) |
+| test-set | subject-1 | 1001 | 2133s | [768, 1024] | ![](test/test-set-subject-1-s1001.png) |
+| test-set | subject-1 | 2001 | 2456s | [768, 1024] | ![](test/test-set-subject-1-s2001.png) |
