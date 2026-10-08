@@ -2,6 +2,11 @@
 
 A free, public batch image pipeline: write prompt sets as JSON, run a workflow, get contact sheets back.
 
+**This is the default way to produce imagery in this project.** It runs on GitHub's own runners, so it
+costs nothing, needs nothing installed, and cannot affect the machine you are working on. It is slow,
+and that is the accepted trade. The local GPU alternative (`forge-motion`) is experimental and can
+freeze a desktop machine.
+
 No API keys, no credits, no GPU. The images are rendered on GitHub-hosted runners, which are free for public
 repositories, by a small open model.
 
