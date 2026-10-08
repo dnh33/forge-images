@@ -69,12 +69,15 @@ the repository, not the doc.
 Two profiles, same prompt (`portraits:marshal`), same canvas (768x1024), same 4-vCPU
 `ubuntu-latest` runner, run in parallel in one benchmark dispatch:
 
-| model | steps | measured | per step | detail proxy* | distinct colours |
-|---|---|---|---|---|---|
-| **FLUX.1-schnell Q4_K_S** | 4 | **2699 s (44m59s)** | 675 s | 395 | 127 340 |
-| Z-Image-Turbo Q3_K | 8 | **4689 s (78m09s)** | 586 s | 456 | 126 509 |
+| model | steps | measured | per step | job wall time | detail proxy* | distinct colours |
+|---|---|---|---|---|---|---|
+| **FLUX.1-schnell Q4_K_S** | 4 | **2699 s (44m59s)** | 675 s | 48m03s | 395 | 127 340 |
+| Z-Image-Turbo Q3_K | 8 | **4689 s (78m09s)** | 586 s | 80m30s | 456 | 126 509 |
 
 \* Laplacian variance: a standard sharpness proxy, higher meaning more fine detail.
+
+The `seconds` in a sidecar is the render alone; the job ran about three minutes longer
+to download the runtime and the model. Budget the wall time, not the render.
 
 What the table says:
 
