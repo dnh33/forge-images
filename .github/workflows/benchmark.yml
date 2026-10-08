@@ -38,6 +38,64 @@ jobs:
               CLIP_L=clip_l.safetensors
               VAE=ae.safetensors
               LLM=
+          # Is a cheap pre-flight preview actually cheap? The 2699 s figure is
+          # render + model load + text encode, and the split has never been
+          # measured. These three profiles settle whether a preview is minutes or
+          # hours. Same prompt, same runner image, one dispatch, in parallel.
+          - profile: control-768x1024-4step
+            model_name: "CONTROL 768x1024 4 steps (known ~2699 s)"
+            steps: "4"
+            w: "768"
+            h: "1024"
+            cfg: "1.0"
+            extra: ""
+            files: |
+              flux.gguf city96/FLUX.1-schnell-gguf/resolve/main/flux1-schnell-Q4_K_S.gguf
+              t5.gguf city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_M.gguf
+              clip_l.safetensors comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors
+              ae.safetensors Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors
+            envv: |
+              DIFFUSION=flux.gguf
+              T5XXL=t5.gguf
+              CLIP_L=clip_l.safetensors
+              VAE=ae.safetensors
+              LLM=
+          - profile: preview-256x256-4step
+            model_name: "PREVIEW 256x256 4 steps (canvas effect only)"
+            steps: "4"
+            w: "256"
+            h: "256"
+            cfg: "1.0"
+            extra: ""
+            files: |
+              flux.gguf city96/FLUX.1-schnell-gguf/resolve/main/flux1-schnell-Q4_K_S.gguf
+              t5.gguf city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_M.gguf
+              clip_l.safetensors comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors
+              ae.safetensors Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors
+            envv: |
+              DIFFUSION=flux.gguf
+              T5XXL=t5.gguf
+              CLIP_L=clip_l.safetensors
+              VAE=ae.safetensors
+              LLM=
+          - profile: preview-256x256-1step
+            model_name: "PREVIEW 256x256 1 step (canvas + steps effect)"
+            steps: "1"
+            w: "256"
+            h: "256"
+            cfg: "1.0"
+            extra: ""
+            files: |
+              flux.gguf city96/FLUX.1-schnell-gguf/resolve/main/flux1-schnell-Q4_K_S.gguf
+              t5.gguf city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_M.gguf
+              clip_l.safetensors comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors
+              ae.safetensors Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors
+            envv: |
+              DIFFUSION=flux.gguf
+              T5XXL=t5.gguf
+              CLIP_L=clip_l.safetensors
+              VAE=ae.safetensors
+              LLM=
           - profile: z-image-turbo-q3k
             model_name: "Z-Image-Turbo Q3_K (Apache-2.0)"
             steps: "8"
@@ -96,8 +154,8 @@ jobs:
           MH_CFG: ${{ matrix.cfg }}
           MH_EXTRA: ${{ matrix.extra }}
           ITEM: ${{ inputs.item }}
-          BW: ${{ inputs.width }}
-          BH: ${{ inputs.height }}
+          BW: ${{ matrix.w || inputs.width }}
+          BH: ${{ matrix.h || inputs.height }}
         run: |
           python3 - <<'PY'
           import base64, json, os
