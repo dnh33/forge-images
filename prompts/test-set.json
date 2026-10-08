@@ -1,0 +1,14 @@
+{
+ "name": "test-set",
+ "size": [
+  768,
+  1024
+ ],
+ "style": "PC case with plywood frames, and noctura fans, designed around a laptop motherboard but turned into a desktop PC.",
+ "items": {
+  "subject-1": {
+   "seed": 1001,
+   "line": "PC case with plywood frames, and noctura fans, designed around a laptop motherboard but turned into a desktop PC. Realistic design for DIY. The idea is a compact, thin pc that only fits around the parts while still delivering good airflow."
+  }
+ }
+}
