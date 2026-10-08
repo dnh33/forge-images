@@ -64,6 +64,40 @@ Note: the runtime's own docs name the FLUX.2 decoder `flux2_ae.safetensors`, but
 the file published in `black-forest-labs/FLUX.2-dev` is `ae.safetensors`. Check
 the repository, not the doc.
 
+## Measured, not assumed
+
+Two profiles, same prompt (`portraits:marshal`), same canvas (768x1024), same 4-vCPU
+`ubuntu-latest` runner, run in parallel in one benchmark dispatch:
+
+| model | steps | measured | per step | detail proxy* | distinct colours |
+|---|---|---|---|---|---|
+| **FLUX.1-schnell Q4_K_S** | 4 | **2699 s (44m59s)** | 675 s | 395 | 127 340 |
+| Z-Image-Turbo Q3_K | 8 | **4689 s (78m09s)** | 586 s | 456 | 126 509 |
+
+\* Laplacian variance: a standard sharpness proxy, higher meaning more fine detail.
+
+What the table says:
+
+- **Z-Image-Turbo is faster per step** (586 s against 675 s) and produces measurably
+  more fine detail (456 against 395). It is the better model per unit of work.
+- **It is also 74% slower to a finished image**, because it is built for 8 steps while
+  schnell is built for 4. Time is what a batch pipeline is short of, so **schnell stays
+  the default**.
+- Schnell reproduced to within 0.1% across two independent runs (2702 s, then 2699 s),
+  so these figures are stable enough to plan against.
+
+Swap the default to Z-Image in `render.yml` if you would rather spend the time for the
+detail. Nothing else changes: the profile is five `env:` lines.
+
+### A run is not free, even when it is free
+
+The first benchmark attempt failed *silently in the middle*: the model download step
+returned before the downloads finished — a `printf | while ... & done` loop runs in a
+subshell, so the `wait` after it waited for nothing — and the render then started against
+an empty `models/` directory. It failed instantly, and the jobs still reported success,
+because a per-item render failure is deliberately not fatal to a shard. Each attempt is a
+job slot, so the download step now verifies every file landed and exits non-zero if not.
+
 ## Proving a swap before adopting it
 
 Do not adopt a model on a hunch. Run the benchmark, which renders the same

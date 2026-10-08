@@ -91,7 +91,10 @@ job timeout.
 
 Which model is the default is a measurement, not a preference. `benchmark.yml` renders one image per
 model profile on the same canvas and records the seconds in each sidecar; the run summary carries the
-comparison table. See [docs/MODELS.md](docs/MODELS.md) for the profiles and how to add one.
+comparison table. See [docs/MODELS.md](docs/MODELS.md) for the profiles, the measured table, and how to
+add one. The short version: Z-Image-Turbo is quicker per step and slightly more detailed, but it needs
+eight steps against schnell's four, making it 74% slower to a finished image (4689 s against 2699 s).
+The default stays schnell.
 
 For interactive work, run the same prompts locally on a GPU (ComfyUI). This pipeline is for the batch
 that can wait.
