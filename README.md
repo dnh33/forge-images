@@ -28,6 +28,28 @@ no code moves. Which variables a given model needs, and how to prove a swap with
 **Actions → _Render_ → Run workflow.** Choose a set (`all`, or a file in `prompts/` without `.json`), optionally
 a comma-separated list of item ids, and the number of seeds per item.
 
+### Who may run it
+
+Only the account named in `context/facts.json` (`owner`) can start a run. The `gate` job compares
+`github.actor` against that file before anything expensive happens; anyone else gets a failed run, and
+nothing renders or publishes. The owner is **data, not a workflow edit** — a copy of this template changes
+one JSON field and is done:
+
+```json
+{ "owner": "your-github-login" }
+```
+
+## Make it yours
+
+The repository is a GitHub template, so a copy is one command (or one click on **Use this template**):
+
+```bash
+gh repo create my-images --template dnh33/forge-images --public
+```
+
+Then in the copy: set `owner` in `context/facts.json` to your login. Everything else — prompts, workflow,
+tests — works as is, and the gate now lets *you* spend the runners.
+
 ## Prompt sets
 
 One JSON file per set in `prompts/`. The file is self-describing:

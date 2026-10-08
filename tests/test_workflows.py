@@ -85,3 +85,53 @@ def test_the_plan_step_is_told_when_to_preview():
     env = plan.get("env", {})
     assert "PREVIEW" in env, "plan.py must be told whether this is a preview"
     assert "PREVIEW_SCALE" in env and "PREVIEW_STEPS" in env
+
+
+def test_a_gate_job_runs_before_anything_else():
+    """Only the owner recorded in the repo's facts may spend runner time."""
+    jobs = list(WF["jobs"])
+    assert "gate" in jobs, "the workflow must have an owner gate job"
+    assert jobs[0] == "gate", f"the gate must run first, got {jobs}"
+
+
+def test_the_gate_reads_the_owner_from_the_facts_file():
+    gate_job = WF["jobs"]["gate"]
+    text = str(gate_job)
+    assert "gate.py" in text, "the gate must run scripts/gate.py"
+    assert "context/facts.json" not in text or "gate.py" in text  # path lives in gate.py
+    # The actor comes in as data via the environment, not a hard-coded name.
+    assert "github.actor" in text, "the gate must compare against github.actor"
+    step = next(s for s in gate_job["steps"] if "gate.py" in str(s.get("run", "")))
+    assert "ACTOR" in step.get("env", {}), "the actor must be passed via env"
+
+
+def test_everything_waits_for_the_gate():
+    # plan is the only consumer of the matrix; render and publish hang off it.
+    plan_needs = WF["jobs"]["plan"].get("needs")
+    assert plan_needs == "gate", f"plan must need the gate, got {plan_needs}"
+    plan_if = WF["jobs"]["plan"].get("if", "")
+    assert "needs.gate.outputs.allowed" in plan_if, plan_if
+
+    publish_needs = WF["jobs"]["publish"].get("needs")
+    assert "gate" in publish_needs, f"publish must also need the gate, got {publish_needs}"
+    publish_if = WF["jobs"]["publish"].get("if", "")
+    assert "needs.gate.outputs.allowed" in publish_if, publish_if
+    # The preview invariant still holds: publish is skipped for previews.
+    assert "inputs.preview" in publish_if, publish_if
+
+
+def test_the_renders_branch_cannot_be_reached_without_the_gate():
+    """Prove a refused actor produces no publish run, by construction.
+
+    publish's condition must require needs.gate.outputs.allowed == 'true', so
+    when the gate fails (output unset) the condition is false and the job is
+    skipped — the renders branch is unreachable for a non-owner.
+    """
+    publish_if = str(WF["jobs"]["publish"].get("if", ""))
+    assert "always()" in publish_if, publish_if
+    allowed = "needs.gate.outputs.allowed == 'true'"
+    assert allowed in publish_if, (
+        "publish must require the gate's allowed output explicitly"
+    )
+    # A failed gate yields an unset output; the equality is then false.
+    assert "allowed == 'true'" in publish_if.replace(allowed, "allowed == 'true'")

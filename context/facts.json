@@ -1,0 +1,4 @@
+{
+  "owner": "dnh33",
+  "note": "The Render workflow refuses to start for any github.actor other than owner. On a copy generated from this template, set owner to the copy's account — it is data, not a workflow edit."
+}

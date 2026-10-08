@@ -54,7 +54,25 @@ env:
   SAMPLER: euler
   MODEL_NAME: FLUX.1-schnell Q4_K_S GGUF (Apache-2.0)
 jobs:
+  gate:
+    # Only the account named in context/facts.json may spend runner time. The
+    # owner is data, not a hard-coded name, so a template copy edits the facts
+    # file and never this workflow. A skipped gate fails every downstream job.
+    runs-on: ubuntu-latest
+    outputs:
+      allowed: ${{ steps.check.outputs.ok }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        env:
+          ACTOR: ${{ github.actor }}
+        run: |
+          python3 scripts/gate.py
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
   plan:
+    needs: gate
+    if: needs.gate.outputs.allowed == 'true'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.p.outputs.matrix }}
@@ -138,9 +156,10 @@ jobs:
           retention-days: 30
 
   publish:
-    needs: render
-    # A preview is never published, so do not even start this job for one.
-    if: always() && !inputs.preview
+    needs: [gate, render]
+    # A preview is never published, so do not even start this job for one; and
+    # do not run it when the gate refused the actor or a render shard failed.
+    if: always() && needs.gate.outputs.allowed == 'true' && !inputs.preview && needs.render.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
