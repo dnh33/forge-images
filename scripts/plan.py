@@ -22,6 +22,12 @@ SHARDS = max(1, int(os.environ.get("SHARDS", "8") or 8))
 VARIANTS = max(1, int(os.environ.get("VARIANTS", "2") or 2))
 STEPS = str(os.environ.get("STEPS", "4") or 4)
 MAX_STEPS = max(1, int(os.environ.get("MAX_STEPS", "50") or 50))
+# Preview: render the same set at a fraction of the canvas and few steps, so a bad
+# set is visible in minutes instead of after a full 45-minute pass. Measured:
+# 256x256 at 4 steps is 252 s against 2699 s at 768x1024.
+PREVIEW = os.environ.get("PREVIEW", "").strip().lower() in {"1", "true", "yes", "on"}
+PREVIEW_SCALE = float(os.environ.get("PREVIEW_SCALE", "0.25") or 0.25)
+PREVIEW_STEPS = str(max(1, int(os.environ.get("PREVIEW_STEPS", "2") or 2)))
 PAGE = 100
 # Explicit page marker keeps each item's prompt from being re-derived anywhere else.
 MARK = "\x00"
@@ -30,6 +36,13 @@ if not STEPS.isdigit():
     sys.exit(f"STEPS must be a whole number, got {STEPS!r}")
 if int(STEPS) > MAX_STEPS:
     sys.exit(f"STEPS={STEPS} exceeds MAX_STEPS={MAX_STEPS}; a typo here burns hours of runner time")
+if not (0 < PREVIEW_SCALE <= 1):
+    sys.exit(f"PREVIEW_SCALE must be >0 and <=1, got {PREVIEW_SCALE}")
+
+
+def align16(value, minimum=16):
+    """Round down to a multiple of 16, the canvas granularity the VAE accepts."""
+    return max(minimum, (int(value) // 16) * 16)
 
 sets = []
 for path in sorted(glob.glob("prompts/*.json")):
@@ -67,8 +80,15 @@ for name, d, filter_by_only in sets:
         for v in range(VARIANTS):
             seed = int(e["seed"]) + v * 1000
             prompt = (e["line"].strip() + " " + style).strip()
+            jw, jh, jsteps = w, h, STEPS
+            if PREVIEW:
+                # Same aspect, smaller canvas, fewer steps. Aspect is preserved
+                # because a preview exists to judge composition.
+                jw, jh = align16(w * PREVIEW_SCALE), align16(h * PREVIEW_SCALE)
+                jsteps = PREVIEW_STEPS
             jobs.append({"id": f"{name}:{key}", "kind": name, "key": key,
-                         "prompt": prompt, "w": w, "h": h, "seed": seed, "steps": STEPS})
+                         "prompt": prompt, "w": jw, "h": jh, "seed": seed,
+                         "steps": jsteps, "preview": PREVIEW})
 
 if not jobs:
     sys.exit(f"No items match ONLY={sorted(ONLY)}")

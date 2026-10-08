@@ -34,6 +34,10 @@ on:
         default: "ubuntu-latest"
         type: choice
         options: [ubuntu-latest, macos-15, macos-14]
+      preview:
+        description: "Preview: small canvas, few steps, never published to renders/"
+        default: false
+        type: boolean
 permissions:
   contents: write
 concurrency: {group: render, cancel-in-progress: false}
@@ -65,6 +69,9 @@ jobs:
           VARIANTS: ${{ inputs.variants }}
           STEPS: ${{ inputs.steps }}
           ADHOC: ${{ inputs.adhoc }}
+          PREVIEW: ${{ inputs.preview }}
+          PREVIEW_SCALE: "0.25"
+          PREVIEW_STEPS: "2"
         run: python3 scripts/plan.py
 
   render:
@@ -122,11 +129,18 @@ jobs:
         run: python3 scripts/render.py
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: "render-${{ matrix.shard }}", path: out/, if-no-files-found: warn, retention-days: 30}
+        with:
+          # A preview uploads as preview-<shard>, so the publish job (which pulls
+          # render-*) can never merge one into the renders branch.
+          name: "${{ inputs.preview && 'preview' || 'render' }}-${{ matrix.shard }}"
+          path: out/
+          if-no-files-found: warn
+          retention-days: 30
 
   publish:
     needs: render
-    if: always()
+    # A preview is never published, so do not even start this job for one.
+    if: always() && !inputs.preview
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

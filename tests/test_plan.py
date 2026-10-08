@@ -19,7 +19,8 @@ def run_plan(tmp_path, **env):
     """Run plan.py. Returns (completed_process, matrix_or_None, github_output_path)."""
     gh_out = tmp_path / "gh_output.txt"
     e = dict(os.environ)
-    for k in ("ADHOC", "ONLY", "SET", "SHARDS", "VARIANTS", "STEPS"):
+    for k in ("ADHOC", "ONLY", "SET", "SHARDS", "VARIANTS", "STEPS",
+              "MAX_STEPS", "PREVIEW", "PREVIEW_SCALE", "PREVIEW_STEPS"):
         e.pop(k, None)
     e["GITHUB_OUTPUT"] = str(gh_out)
     for k, v in env.items():
@@ -173,6 +174,51 @@ def test_adhoc_keeps_its_own_canvas(tmp_path):
 def test_malformed_adhoc_fails(tmp_path):
     p, matrix, _ = run_plan(tmp_path, SET="all", ADHOC="not-base64-json")
     assert p.returncode != 0
+
+
+# ----------------------------------------------------------------- preview
+
+def test_preview_shrinks_the_canvas_and_preserves_aspect(tmp_path):
+    p, matrix, _ = run_plan(tmp_path, SET="portraits", ONLY="marshal", PREVIEW="true",
+                            VARIANTS=1, PREVIEW_SCALE="0.25", PREVIEW_STEPS="2")
+    assert p.returncode == 0, p.stderr
+    j = jobs_of(matrix)[0]
+    # 768x1024 at 0.25 -> 192x256, same 3:4 aspect, both multiples of 16
+    assert (j["w"], j["h"]) == (192, 256), (j["w"], j["h"])
+    assert j["w"] % 16 == 0 and j["h"] % 16 == 0
+    assert j["w"] / j["h"] == 768 / 1024
+
+
+def test_preview_clamps_the_step_count(tmp_path):
+    p, matrix, _ = run_plan(tmp_path, SET="portraits", ONLY="marshal", PREVIEW="true",
+                            VARIANTS=1, STEPS="4", PREVIEW_STEPS="2")
+    assert jobs_of(matrix)[0]["steps"] == "2", "a preview must not inherit full steps"
+
+
+def test_preview_is_recorded_on_the_job(tmp_path):
+    p, matrix, _ = run_plan(tmp_path, SET="portraits", ONLY="marshal", PREVIEW="true", VARIANTS=1)
+    assert jobs_of(matrix)[0]["preview"] is True
+
+
+def test_a_normal_job_is_not_marked_as_a_preview(tmp_path):
+    p, matrix, _ = run_plan(tmp_path, SET="portraits", ONLY="marshal", VARIANTS=1)
+    j = jobs_of(matrix)[0]
+    assert j["preview"] is False
+    assert (j["w"], j["h"]) == (768, 1024), "a real render keeps its canvas"
+
+
+def test_a_bad_preview_scale_is_refused(tmp_path):
+    p, matrix, _ = run_plan(tmp_path, SET="all", PREVIEW="true", PREVIEW_SCALE="3")
+    assert p.returncode != 0
+    assert "PREVIEW_SCALE" in (p.stderr + p.stdout)
+
+
+def test_the_align16_helper_rounds_down_and_never_hits_zero(tmp_path):
+    p, matrix, _ = run_plan(tmp_path, SET="portraits", ONLY="marshal", PREVIEW="true",
+                            VARIANTS=1, PREVIEW_SCALE="0.01")
+    j = jobs_of(matrix)[0]
+    assert j["w"] >= 16 and j["h"] >= 16, "a tiny scale must not produce a 0px canvas"
+    assert j["w"] % 16 == 0 and j["h"] % 16 == 0
 
 
 # ----------------------------------------------------------------- workflow contract

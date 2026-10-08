@@ -71,6 +71,7 @@ for job in JOBS:
     json.dump({"kind": job["kind"], "id": job["key"], "seed": job["seed"],
                "steps": int(job.get("steps", DEFAULT_STEPS)), "size": [job["w"], job["h"]],
                "seconds": dt, "prompt": job["prompt"], "model": MODEL_NAME,
+               "preview": bool(job.get("preview", False)),
                "runner": os.environ.get("RUNNER_OS", "") + "/" + os.environ.get("RUNNER_ARCH", "")},
               open(name + ".json", "w"), indent=1)
     print(f"{job['id']} seed {job['seed']}: {dt}s", flush=True)
