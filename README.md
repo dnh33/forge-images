@@ -83,9 +83,15 @@ Free. The trade is time, and the trade is steep — measured, not estimated:
 | the same render on a mid-range desktop GPU | a few seconds |
 
 That number is recorded in every image's JSON sidecar (`seconds`), so it can be checked rather than
-trusted. Plan for it: a single image is an hour-class job, which is exactly why the pipeline shards a
-batch across parallel jobs — a shard only pays the model download once, and wall-clock falls as you
-add shards. Keep each shard to a small number of images so it stays inside the job timeout.
+trusted. Two independent runs measured **2702 s** and **2699 s** for the same prompt and canvas, so the
+figure reproduces to within 0.1%. Plan for it: a single image is an hour-class job, which is exactly why
+the pipeline shards a batch across parallel jobs — a shard only pays the model download once, and
+wall-clock falls as you add shards. Keep each shard to a small number of images so it stays inside the
+job timeout.
+
+Which model is the default is a measurement, not a preference. `benchmark.yml` renders one image per
+model profile on the same canvas and records the seconds in each sidecar; the run summary carries the
+comparison table. See [docs/MODELS.md](docs/MODELS.md) for the profiles and how to add one.
 
 For interactive work, run the same prompts locally on a GPU (ComfyUI). This pipeline is for the batch
 that can wait.
