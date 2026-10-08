@@ -1,0 +1,15 @@
+{
+ "kind": "quartermaster",
+ "id": "qm-portrait-2",
+ "seed": 888,
+ "steps": 4,
+ "size": [
+  768,
+  1024
+ ],
+ "seconds": 2758,
+ "prompt": "Quartermaster mascot alternate angle: Legion quartermaster in three-quarter view, crate helm slightly tilted, pallet-fork plume swaying, barcode halo mid-rotation step. Cargo straps and shrink-wrap hangs visible on sides. Manifest token with barcode visible. Hazard orange stripes on crate corners. Phosphor green visor glow illuminating crate interior. Dark steel background (#0e1013), volumetric lighting. Legion mascot: industrial logistics / supply chain quartermaster. Dark iron/steel crate helm, pallet-fork plume, barcode/QR rotating halo, manifest token, cargo straps. Phosphor green visor/eyes (#7CFFB2), dark iron base (#0e1013), copper/amber accents (#c99272), phosphor green glow (#7CFFB2). Layered SVG contract: L-aura, L-halo-back (barcode/QR ring, steps per verb), L-plume (pallet-fork), L-helm (shipping crate with lid), L-face (barcode scanner visor, phosphor green 7x4 pixel eyes), L-hang (cargo straps/shrink-wrap), L-token (manifest with barcode, data-flip=none), L-hang (cargo straps/shrink-wrap). Halo: barcode/QR radial, steps per verb. Colors: dark iron #0e1013, phosphor green #7CFFB2, copper #c99272, steel blue, safety orange #FF6600 sparing.",
+ "model": "FLUX.1-schnell Q4_K_S GGUF (Apache-2.0)",
+ "preview": false,
+ "runner": "Linux/X64"
+}

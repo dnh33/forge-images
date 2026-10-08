@@ -1,0 +1,15 @@
+{
+ "kind": "quartermaster",
+ "id": "qm-portrait",
+ "seed": 777,
+ "steps": 4,
+ "size": [
+  768,
+  1024
+ ],
+ "seconds": 3003,
+ "prompt": "Quartermaster mascot portrait: Legion supply chain quartermaster bust, industrial logistics aesthetic. Shipping crate helm with lid (helm), pallet-fork plume with lit tips, barcode/QR code radial halo rotating and stepping per verb. Phosphor green barcode-scanner visor (#7CFFB2), 7x4 pixel eyes (#ffffff core, #b9ffd8 glow). Dark iron/steel crate body (#0e1013, #1a1d21), copper/amber accents (#c99272, #8a4f35), hazard orange (#FF6600) hazard stripes on crate edges. Cargo straps and shrink-wrap hangs swaying independently. Shipping manifest token with barcode/QR code (data-flip=none). Barcode/QR radial halo rotating and stepping per persona verb. Cool steel blue halo glow (#3a4654 to #1a2028). Safety orange hazard stripes sparingly. Dark iron base #0e1013, phosphor green #7CFFB2 visor/eyes/glow, copper #c99272 accents. Rim light on crate edges. Industrial lighting, dramatic shadows, portrait orientation 3:4. Legion mascot: industrial logistics / supply chain quartermaster. Dark iron/steel crate helm, pallet-fork plume, barcode/QR rotating halo, manifest token, cargo straps. Phosphor green visor/eyes (#7CFFB2), dark iron base (#0e1013), copper/amber accents (#c99272), phosphor green glow (#7CFFB2). Layered SVG contract: L-aura, L-halo-back (barcode/QR ring, steps per verb), L-plume (pallet-fork), L-helm (shipping crate with lid), L-face (barcode scanner visor, phosphor green 7x4 pixel eyes), L-hang (cargo straps/shrink-wrap), L-token (manifest with barcode, data-flip=none), L-hang (cargo straps/shrink-wrap). Halo: barcode/QR radial, steps per verb. Colors: dark iron #0e1013, phosphor green #7CFFB2, copper #c99272, steel blue, safety orange #FF6600 sparing.",
+ "model": "FLUX.1-schnell Q4_K_S GGUF (Apache-2.0)",
+ "preview": false,
+ "runner": "Linux/X64"
+}
