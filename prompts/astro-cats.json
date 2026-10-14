@@ -1,0 +1,66 @@
+{
+ "name": "Astro Cats keyframes",
+ "size": [
+  1152,
+  480
+ ],
+ "style": "Cinematic film still, anamorphic widescreen, shot on 35mm film, photorealistic fur and materials with storybook charm, soft volumetric light, shallow depth of field, teal and warm amber color grade, highly detailed, sharp focus on the cats' faces. Every cat helmet is a fully closed clear glass sphere. No text, no letters, no logos, no watermark, no humans.",
+ "items": {
+  "01-launchpad": {
+   "seed": 2001,
+   "line": "Wide shot at golden hour: three cat astronauts, an orange tabby, a black-and-white tuxedo cat and a fluffy pale grey cat, each in a white cat-sized spacesuit with orange shoulder patches, each with its whole head and both ears sealed inside its own clear round glass bubble helmet joined to the suit by a silver neck ring, walk side by side across a concrete launch pad toward a tall white rocket on its tower, long shadows, warm sky."
+  },
+  "02-seal-check": {
+   "seed": 2002,
+   "line": "Close-up: Marmalade, a fluffy orange tabby cat with amber eyes, in a white cat-sized spacesuit, its whole head, both ears included, sealed inside one large clear round glass bubble helmet, a complete transparent sphere joined to the suit by a silver metal neck ring, no fur or ears outside the glass, presses a paw to the silver neck ring of its helmet to check the seal, a row of spacesuits on hooks behind it, warm locker-room light."
+  },
+  "03-cockpit": {
+   "seed": 2003,
+   "line": "Inside a compact rocket cockpit: three cat astronauts, an orange tabby, a black-and-white tuxedo cat and a fluffy pale grey cat, each in a white cat-sized spacesuit with orange shoulder patches, each with its whole head and both ears sealed inside its own clear round glass bubble helmet joined to the suit by a silver neck ring, sit strapped into three padded seats, the tuxedo cat's paws on a control stick, panels of glowing buttons and small screens all around."
+  },
+  "04-liftoff": {
+   "seed": 2004,
+   "line": "A tall white rocket lifts off its launch tower on a column of bright orange flame, huge billowing white smoke clouds spreading across the pad, golden evening sky, epic wide shot."
+  },
+  "05-weightless": {
+   "seed": 2005,
+   "line": "Inside a white spaceship module in orbit: three cat astronauts, an orange tabby, a black-and-white tuxedo cat and a fluffy pale grey cat, each in a white cat-sized spacesuit with orange shoulder patches, each with its whole head and both ears sealed inside its own clear round glass bubble helmet joined to the suit by a silver neck ring, float weightless in mid-air with paws spread and seat straps drifting loose, the blue curve of the Earth filling a round window behind them."
+  },
+  "06-yarn": {
+   "seed": 2006,
+   "line": "Inside a white spaceship module: Pebble, a fluffy long-haired pale grey cat with big round copper eyes, in a white cat-sized spacesuit, its whole head, both ears included, sealed inside one large clear round glass bubble helmet, a complete transparent sphere joined to the suit by a silver metal neck ring, no fur or ears outside the glass, floats weightless and bats at a red ball of yarn drifting in mid-air, a loose strand of red yarn curling around it, soft cool interior light."
+  },
+  "07-airlock": {
+   "seed": 2007,
+   "line": "Inside a spaceship airlock with its outer round hatch open to black space: Pebble, a fluffy long-haired pale grey cat with big round copper eyes, in a white cat-sized spacesuit, its whole head, both ears included, sealed inside one large clear round glass bubble helmet, a complete transparent sphere joined to the suit by a silver metal neck ring, no fur or ears outside the glass, reaches out with one paw as a red ball of yarn floats away through the open hatch toward the stars."
+  },
+  "08-adrift": {
+   "seed": 2008,
+   "line": "In black space above the blue Earth: Pebble, a fluffy long-haired pale grey cat with big round copper eyes, in a white cat-sized spacesuit, its whole head, both ears included, sealed inside one large clear round glass bubble helmet, a complete transparent sphere joined to the suit by a silver metal neck ring, no fur or ears outside the glass, floats alone holding a red ball of yarn, a loose white tether trailing from its suit, its copper eyes wide in surprise, a white spaceship small in the distance."
+  },
+  "09-captain": {
+   "seed": 2009,
+   "line": "Close-up inside a dim spaceship lit by a flashing red alarm light: Marmalade, a fluffy orange tabby cat with amber eyes, in a white cat-sized spacesuit, its whole head, both ears included, sealed inside one large clear round glass bubble helmet, a complete transparent sphere joined to the suit by a silver metal neck ring, no fur or ears outside the glass, looks up with a determined expression and narrowed amber eyes."
+  },
+  "10-spacewalk": {
+   "seed": 2010,
+   "line": "Outside on the white hull of a spaceship in orbit: Marmalade, a fluffy orange tabby cat with amber eyes, clipped to a long white tether, pushes off toward open space while Tux, a sleek black-and-white tuxedo cat with a white chest and green eyes, holds the tether behind it, both cats in white cat-sized spacesuits, each with its whole head and both ears sealed inside its own clear round glass bubble helmet joined to the suit by a silver neck ring, the Earth below."
+  },
+  "11-reach": {
+   "seed": 2011,
+   "line": "In open space with the sun flaring over the curved Earth: Marmalade, a fluffy orange tabby cat with amber eyes, stretches one paw toward Pebble, a fluffy long-haired pale grey cat with big round copper eyes, the two floating a short distance apart, both cats in white cat-sized spacesuits, each with its whole head and both ears sealed inside its own clear round glass bubble helmet joined to the suit by a silver neck ring, a white tether stretching back toward a spaceship."
+  },
+  "12-rescue": {
+   "seed": 2012,
+   "line": "In open space above the blue Earth: Marmalade, a fluffy orange tabby cat with amber eyes, hugs Pebble, a fluffy long-haired pale grey cat with big round copper eyes, tightly as a white tether pulls them back toward the open hatch of a white spaceship, both cats in white cat-sized spacesuits, each with its whole head and both ears sealed inside its own clear round glass bubble helmet joined to the suit by a silver neck ring, the red ball of yarn held safe."
+  },
+  "13-home": {
+   "seed": 2013,
+   "line": "Inside a white spaceship module: three cat astronauts, an orange tabby, a black-and-white tuxedo cat and a fluffy pale grey cat, each in a white cat-sized spacesuit with orange shoulder patches, each with its whole head and both ears sealed inside its own clear round glass bubble helmet joined to the suit by a silver neck ring, float together in a happy huddle, the grey cat holding a red ball of yarn, soft warm interior light, relief on their faces."
+  },
+  "14-window": {
+   "seed": 2014,
+   "line": "Inside a spaceship at a large round window: three cat astronauts, an orange tabby, a black-and-white tuxedo cat and a fluffy pale grey cat, each in a white cat-sized spacesuit with orange shoulder patches, each with its whole head and both ears sealed inside its own clear round glass bubble helmet joined to the suit by a silver neck ring, float side by side with their paws on the glass, seen from behind, watching a brilliant golden sunrise over the curved blue Earth."
+  }
+ }
+}
