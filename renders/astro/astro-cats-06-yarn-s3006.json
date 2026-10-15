@@ -1,0 +1,15 @@
+{
+ "kind": "astro-cats",
+ "id": "06-yarn",
+ "seed": 3006,
+ "steps": 4,
+ "size": [
+  1152,
+  480
+ ],
+ "seconds": 1585,
+ "prompt": "Inside a white spaceship module: Pebble, a fluffy long-haired pale grey cat with big round copper eyes, in a white cat-sized spacesuit, its whole head, both ears included, sealed inside one large clear round glass bubble helmet, a complete transparent sphere joined to the suit by a silver metal neck ring, no fur or ears outside the glass, floats weightless and bats at a red ball of yarn drifting in mid-air, a loose strand of red yarn curling around it, soft cool interior light. Cinematic film still, anamorphic widescreen, shot on 35mm film, photorealistic fur and materials with storybook charm, soft volumetric light, shallow depth of field, teal and warm amber color grade, highly detailed, sharp focus on the cats' faces. Every cat helmet is a fully closed clear glass sphere. No text, no letters, no logos, no watermark, no humans.",
+ "model": "FLUX.1-schnell Q4_K_S GGUF (Apache-2.0)",
+ "preview": false,
+ "runner": "Linux/X64"
+}

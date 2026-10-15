@@ -1,0 +1,15 @@
+{
+ "kind": "astro-cats",
+ "id": "03-cockpit",
+ "seed": 4003,
+ "steps": 4,
+ "size": [
+  1152,
+  480
+ ],
+ "seconds": 1580,
+ "prompt": "Inside a compact rocket cockpit: three cat astronauts, an orange tabby, a black-and-white tuxedo cat and a fluffy pale grey cat, each in a white cat-sized spacesuit with orange shoulder patches, each with its whole head and both ears sealed inside its own clear round glass bubble helmet joined to the suit by a silver neck ring, sit strapped into three padded seats, the tuxedo cat's paws on a control stick, panels of glowing buttons and small screens all around. Cinematic film still, anamorphic widescreen, shot on 35mm film, photorealistic fur and materials with storybook charm, soft volumetric light, shallow depth of field, teal and warm amber color grade, highly detailed, sharp focus on the cats' faces. Every cat helmet is a fully closed clear glass sphere. No text, no letters, no logos, no watermark, no humans.",
+ "model": "FLUX.1-schnell Q4_K_S GGUF (Apache-2.0)",
+ "preview": false,
+ "runner": "Linux/X64"
+}
